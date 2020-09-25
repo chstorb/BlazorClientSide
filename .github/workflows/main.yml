@@ -5,7 +5,8 @@ name: DeployToGitHubPages
 
 # B. Define a environment variable to indicate the publish location from the Blazor WebAssembly App
 env:
-  PUBLISH_DIR: examples/Howler.Blazor-WASM-AudioPlayer/bin/Release/netstandard2.1/publish/wwwroot
+  #PUBLISH_DIR: examples/Howler.Blazor-WASM-AudioPlayer/bin/Release/netstandard2.1/publish/wwwroot
+  PUBLISH_DIR: chstorb/BlazorClientSide/bin/Release/netstandard2.1/publish/wwwroot
 
 ## Controls when the action will run. Triggers the workflow on push or pull request
 ## events but only for the master branch
@@ -50,19 +51,19 @@ jobs:
 
     # E. Build and Publish the Blazor WebAssembly App
     - name: Publish app
-      run: dotnet publish -c Release examples/Howler.Blazor-WASM-AudioPlayer
+      run: dotnet publish -c Release chstorb/BlazorClientSide
 
     # F. The <base> url in index.html needs to be modified depending on where the project is deployed.
     - name: Rewrite base href
-      uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
+      uses: chstorb/ghaction-rewrite-base-href@v1
       with:
         html_path: ${{ env.PUBLISH_DIR }}/index.html
-        base_href: /Howler.Blazor/
+        base_href: /BlazorClientSide/
 
     # G. This step commits all files from the wwwroot folder to the gh-pages branch
     - name: GitHub Pages
       if: success()
-      uses: crazy-max/ghaction-github-pages@v1.5.1
+      uses: chstorb/ghaction-github-pages@v1.5.1
       with:
         target_branch: gh-pages
         build_dir: ${{ env.PUBLISH_DIR }}
