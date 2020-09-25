@@ -1,0 +1,70 @@
+## This is a basic workflow to help you get started with Actions
+#name: CI
+# A. Define the name for this action
+name: DeployToGitHubPages
+
+# B. Define a environment variable to indicate the publish location from the Blazor WebAssembly App
+env:
+  PUBLISH_DIR: examples/Howler.Blazor-WASM-AudioPlayer/bin/Release/netstandard2.1/publish/wwwroot
+
+## Controls when the action will run. Triggers the workflow on push or pull request
+## events but only for the master branch
+#on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
+
+# C. Controls when the action will run, in this case only checkins on master branch
+on:
+  push:
+    branches: [ master ]
+
+## A workflow run is made up of one or more jobs that can run sequentially or in parallel
+#jobs:
+#  # This workflow contains a single job called "build"
+#  build:
+#    # The type of runner that the job will run on
+#    runs-on: ubuntu-latest
+#
+#    # Steps represent a sequence of tasks that will be executed as part of the job
+#    steps:
+#      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#      - uses: actions/checkout@v2
+#
+#      # Runs a single command using the runners shell
+#      - name: Run a one-line script
+#        run: echo Hello, world!
+#
+#      # Runs a set of commands using the runners shell
+#      - name: Run a multi-line script
+#        run: |
+#          echo Add other actions to build,
+#          echo test, and deploy your project.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # D. Check out the code
+    - uses: actions/checkout@v2
+
+    # E. Build and Publish the Blazor WebAssembly App
+    - name: Publish app
+      run: dotnet publish -c Release examples/Howler.Blazor-WASM-AudioPlayer
+
+    # F. The <base> url in index.html needs to be modified depending on where the project is deployed.
+    - name: Rewrite base href
+      uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
+      with:
+        html_path: ${{ env.PUBLISH_DIR }}/index.html
+        base_href: /Howler.Blazor/
+
+    # G. This step commits all files from the wwwroot folder to the gh-pages branch
+    - name: GitHub Pages
+      if: success()
+      uses: crazy-max/ghaction-github-pages@v1.5.1
+      with:
+        target_branch: gh-pages
+        build_dir: ${{ env.PUBLISH_DIR }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
